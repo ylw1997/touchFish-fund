@@ -27,7 +27,7 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
   }
 
   async refresh(): Promise<void> {
-    await this.sendInitialState();
+    await this.sendInitialState(true);
   }
 
   async showLogin(): Promise<void> {
@@ -35,12 +35,16 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
     await this.view?.webview.postMessage({ type: "signedOut" });
   }
 
-  private async handleMessage(message: { type?: string; ticket?: string }): Promise<void> {
+  private async handleMessage(
+    message: { type?: string; ticket?: string; accountId?: number }
+  ): Promise<void> {
     try {
       switch (message.type) {
         case "ready":
-        case "refresh":
           await this.sendInitialState();
+          break;
+        case "refresh":
+          await this.sendInitialState(true);
           break;
         case "startLogin": {
           this.stopPolling();
@@ -61,6 +65,19 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
           await this.api.clearToken();
           await this.view?.webview.postMessage({ type: "signedOut" });
           await this.onPortfolioUpdated();
+          break;
+        case "selectAccount":
+          if (typeof message.accountId !== "number") {
+            throw new Error("账户 ID 无效");
+          }
+          await this.view?.webview.postMessage({ type: "busy", payload: true });
+          try {
+            await this.api.selectAccount(message.accountId);
+            await this.sendInitialState();
+            await this.onPortfolioUpdated();
+          } finally {
+            await this.view?.webview.postMessage({ type: "busy", payload: false });
+          }
           break;
       }
     } catch (error) {
@@ -106,20 +123,29 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
     this.pollExpiresAt = 0;
   }
 
-  private async sendInitialState(): Promise<void> {
-    if (!this.api.token) {
+  private async sendInitialState(showBusy = false): Promise<void> {
+    if (showBusy) {
+      await this.view?.webview.postMessage({ type: "busy", payload: true });
+    }
+    try {
+      if (!this.api.token) {
+        await this.view?.webview.postMessage({
+          type: "initialState",
+          payload: { loggedIn: false, demo: this.api.isDemo }
+        });
+        return;
+      }
+
+      const portfolio = await this.api.getPortfolio();
       await this.view?.webview.postMessage({
         type: "initialState",
-        payload: { loggedIn: false, demo: this.api.isDemo }
+        payload: { loggedIn: true, demo: this.api.isDemo, portfolio }
       });
-      return;
+    } finally {
+      if (showBusy) {
+        await this.view?.webview.postMessage({ type: "busy", payload: false });
+      }
     }
-
-    const portfolio = await this.api.getPortfolio();
-    await this.view?.webview.postMessage({
-      type: "initialState",
-      payload: { loggedIn: true, demo: this.api.isDemo, portfolio }
-    });
   }
 
   private getHtml(webview: vscode.Webview): string {

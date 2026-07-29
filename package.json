@@ -1,11 +1,15 @@
 {
-  "name": "fund-view",
-  "displayName": "基金看板",
+  "name": "touchFish-fund",
+  "displayName": "摸鱼养基",
   "description": "在 VS Code 侧边栏查看基金持仓和当日收益。",
   "version": "0.1.0",
   "packageManager": "pnpm@10.26.1",
   "publisher": "ylw",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ylw1997/touchFish-fund.git"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -25,7 +29,7 @@
       "activitybar": [
         {
           "id": "fundView",
-          "title": "基金看板",
+          "title": "摸鱼养基",
           "icon": "media/fund.svg"
         }
       ]
@@ -35,31 +39,24 @@
         {
           "type": "webview",
           "id": "fundView.portfolio",
-          "name": "我的基金"
+          "name": "我的基金",
+          "icon": "media/fund.svg"
         }
       ]
     },
     "commands": [
       {
-        "command": "fundView.refresh",
-        "title": "基金看板：刷新"
-      },
-      {
         "command": "fundView.login",
-        "title": "基金看板：扫码登录"
+        "title": "摸鱼养基：扫码登录"
       },
       {
         "command": "fundView.logout",
-        "title": "基金看板：退出登录"
+        "title": "摸鱼养基：退出登录",
+        "icon": "$(sign-out)"
       }
     ],
     "menus": {
       "view/title": [
-        {
-          "command": "fundView.refresh",
-          "when": "view == fundView.portfolio",
-          "group": "navigation"
-        },
         {
           "command": "fundView.logout",
           "when": "view == fundView.portfolio",
@@ -68,17 +65,12 @@
       ]
     },
     "configuration": {
-      "title": "基金看板",
+      "title": "摸鱼养基",
       "properties": {
         "fundView.token": {
           "type": "string",
           "default": "",
           "markdownDescription": "登录 Token。扫码登录成功后由插件自动写入。"
-        },
-        "fundView.apiBaseUrl": {
-          "type": "string",
-          "default": "https://browser-plug-api.yangjibao.com",
-          "markdownDescription": "养基宝 API 地址，必须使用 HTTPS。"
         },
         "fundView.useDemoData": {
           "type": "boolean",
@@ -90,6 +82,11 @@
           "default": 60,
           "minimum": 60,
           "markdownDescription": "收益刷新间隔（秒），最小 60 秒。"
+        },
+        "fundView.selectedAccountId": {
+          "type": "number",
+          "default": 0,
+          "markdownDescription": "当前查看的养基宝账户 ID，由账户切换自动维护。"
         },
         "fundView.showStatusBar": {
           "type": "boolean",

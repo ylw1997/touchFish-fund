@@ -6,7 +6,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const api = new FundApi();
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
   status.name = "基金当日收益";
-  status.command = "fundView.refresh";
+  status.command = "fundView.open";
 
   const updateStatus = async () => {
     const config = vscode.workspace.getConfiguration("fundView");
@@ -18,7 +18,6 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!api.token) {
       status.text = "$(graph) 基金：未登录";
       status.tooltip = "点击打开基金看板";
-      status.command = "fundView.login";
       status.show();
       return;
     }
@@ -27,9 +26,10 @@ export function activate(context: vscode.ExtensionContext): void {
       const portfolio = await api.getPortfolio();
       const value = portfolio.todayProfit;
       const sign = value > 0 ? "+" : "";
-      status.text = `$(graph-line) 今日 ${sign}¥${value.toFixed(2)}`;
-      status.tooltip = `总资产 ¥${portfolio.totalAsset.toFixed(2)} · ${portfolio.updatedAt}`;
-      status.command = "fundView.refresh";
+      status.text =
+        `$(graph-line) ${portfolio.accountName} ${sign}${value.toFixed(2)}`;
+      status.tooltip =
+        `${portfolio.accountName} · 总资产 ¥${portfolio.totalAsset.toFixed(2)} · ${portfolio.updatedAt}`;
       status.show();
     } catch (error) {
       status.text = "$(warning) 基金：刷新失败";
@@ -45,6 +45,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const refresh = vscode.commands.registerCommand("fundView.refresh", async () => {
     await Promise.all([provider.refresh(), updateStatus()]);
+  });
+  const open = vscode.commands.registerCommand("fundView.open", async () => {
+    await vscode.commands.executeCommand("workbench.view.extension.fundView");
+    await vscode.commands.executeCommand("fundView.portfolio.focus");
+    await provider.refresh();
   });
   const login = vscode.commands.registerCommand("fundView.login", async () => {
     await vscode.commands.executeCommand("workbench.view.extension.fundView");
@@ -77,6 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     register,
     refresh,
+    open,
     login,
     logout,
     configListener,

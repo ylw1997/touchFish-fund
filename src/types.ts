@@ -6,6 +6,8 @@ export interface FundHolding {
   amount: number;
   amountDate?: string;
   todayRate?: number;
+  actualTodayProfit?: number;
+  estimatedTodayProfit?: number;
   relatedBoard?: string;
   holdingProfit: number;
   holdingRate: number;
@@ -14,10 +16,22 @@ export interface FundHolding {
 
 export interface Portfolio {
   accountName: string;
+  accounts: Array<{ id: number; title: string }>;
+  selectedAccountId: number;
   totalAsset: number;
   todayProfit: number;
+  todayProfitRate: number;
   updatedAt: string;
   holdings: FundHolding[];
+  indices: MarketIndex[];
+}
+
+export interface MarketIndex {
+  code: string;
+  name: string;
+  value: number;
+  change: number;
+  changeRate: number;
 }
 
 export interface QrSession {
