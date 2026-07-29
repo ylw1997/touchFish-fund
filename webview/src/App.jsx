@@ -6,7 +6,6 @@ import {
   Skeleton,
   Spin,
   Tabs,
-  Tooltip,
   Typography,
   theme
 } from "antd";
@@ -234,9 +233,7 @@ function HoldingRow({ fund, hidden }) {
   return (
     <article className="holding-row">
       <div className="holding-main">
-        <Tooltip title={fund.name} placement="topLeft">
-          <div className="holding-name">{fund.name}</div>
-        </Tooltip>
+        <div className="holding-name">{fund.name}</div>
         <div className="holding-sub">
           {fund.actualTodayProfit != null && <span className="updated-badge">已更新</span>}
           ¥ {hidden ? "••••" : money.format(fund.amount)}
@@ -245,24 +242,20 @@ function HoldingRow({ fund, hidden }) {
         </div>
       </div>
       <div className="holding-day">
-        <Tooltip title={isEstimated ? "实时估算收益" : "当日收益"} placement="top">
-          <div className={`holding-day-value ${tone(todayProfit ?? 0)}`}>
-            {isEstimated && <span className="estimate-badge">估</span>}
-            {todayProfit == null
-              ? "—"
-              : hidden
-                ? "••••"
-                : signed(todayProfit)}
-          </div>
-        </Tooltip>
+        <div className={`holding-day-value ${tone(todayProfit ?? 0)}`}>
+          {isEstimated && <span className="estimate-badge">估</span>}
+          {todayProfit == null
+            ? "—"
+            : hidden
+              ? "••••"
+              : signed(todayProfit)}
+        </div>
       </div>
       <div className="holding-valuation">
         <div className={tone(fund.todayRate ?? 0)}>
           {fund.todayRate == null ? "—" : signed(fund.todayRate, "%")}
         </div>
-        <Tooltip title={fund.relatedBoard || "暂无关联板块"} placement="top">
-          <div className="holding-sub board-name">{fund.relatedBoard || "—"}</div>
-        </Tooltip>
+        <div className="holding-sub board-name">{fund.relatedBoard || "—"}</div>
       </div>
       <div className="holding-profit">
         <div className={tone(fund.holdingProfit)}>
@@ -300,28 +293,24 @@ function PortfolioView({ portfolio, busy, onRefresh, onLogout, onSelectAccount }
           onChange={(accountId) => onSelectAccount(Number(accountId))}
         />
         <div className="topbar-actions">
-          <Tooltip title="刷新">
-            <button
-              className="icon-button"
-              onClick={onRefresh}
-              aria-label="刷新"
-              disabled={busy}
-            >
-              <ReloadOutlined className={busy ? "spin-icon" : ""} />
-            </button>
-          </Tooltip>
-          <Tooltip title="退出登录">
-            <button className="icon-button" onClick={onLogout} aria-label="退出登录">
-              <LogoutOutlined />
-            </button>
-          </Tooltip>
+          <button
+            className="icon-button"
+            onClick={onRefresh}
+            aria-label="刷新"
+            disabled={busy}
+          >
+            <ReloadOutlined className={busy ? "spin-icon" : ""} />
+          </button>
+          <button className="icon-button" onClick={onLogout} aria-label="退出登录">
+            <LogoutOutlined />
+          </button>
         </div>
       </header>
       <Summary portfolio={portfolio} hidden={hidden} onToggle={() => setHidden((value) => !value)} />
       <div className="table-head">
         <span>基金 / 持有金额</span>
         <span>当日收益</span>
-        <span title="盘中估算涨跌幅，并非最终净值">实时估值</span>
+        <span>实时估值</span>
         <span>持有收益</span>
       </div>
       <section className="holding-list">
