@@ -1,8 +1,8 @@
 {
   "name": "touchFish-fund",
-  "displayName": "摸鱼养基",
+  "displayName": "touchFish-fund",
   "description": "在 VS Code 侧边栏查看基金持仓和当日收益。",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.26.1",
   "publisher": "ylw",
   "license": "MIT",
@@ -13,6 +13,7 @@
   "engines": {
     "vscode": "^1.90.0"
   },
+  "icon": "logo.png",
   "categories": [
     "Other",
     "Visualization"
@@ -29,7 +30,7 @@
       "activitybar": [
         {
           "id": "fundView",
-          "title": "摸鱼养基",
+          "title": "touchFish-fund",
           "icon": "media/fund.svg"
         }
       ]
@@ -47,11 +48,11 @@
     "commands": [
       {
         "command": "fundView.login",
-        "title": "摸鱼养基：扫码登录"
+        "title": "touchFish-fund：扫码登录"
       },
       {
         "command": "fundView.logout",
-        "title": "摸鱼养基：退出登录",
+        "title": "touchFish-fund：退出登录",
         "icon": "$(sign-out)"
       }
     ],
@@ -65,7 +66,7 @@
       ]
     },
     "configuration": {
-      "title": "摸鱼养基",
+      "title": "touchFish-fund",
       "properties": {
         "fundView.token": {
           "type": "string",

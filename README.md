@@ -1,4 +1,4 @@
-# 摸鱼养基
+# touchFish-fund
 
 在 VS Code 侧边栏查看基金账户、持仓收益与大盘行情，不离开编辑器也能快速了解账户变化。
 
@@ -26,7 +26,7 @@
 
 ### 扩展市场
 
-在 VS Code 扩展面板中搜索“摸鱼养基”，然后点击“安装”。
+在 VS Code 扩展面板中搜索“touchFish-fund”，然后点击“安装”。
 
 ### VSIX 安装
 
@@ -45,7 +45,7 @@ code --install-extension touchFish-fund-0.1.0.vsix
 
 ## 使用方法
 
-1. 点击活动栏中的“摸鱼养基”图标。
+1. 点击活动栏中的“touchFish-fund”图标。
 2. 使用账户所属客户端扫描二维码。
 3. 在手机端确认登录。
 4. 登录成功后，插件会自动加载账户资产和基金持仓。
@@ -54,12 +54,12 @@ code --install-extension touchFish-fund-0.1.0.vsix
 
 也可以通过命令面板执行：
 
-- `摸鱼养基：扫码登录`
-- `摸鱼养基：退出登录`
+- `touchFish-fund：扫码登录`
+- `touchFish-fund：退出登录`
 
 ## 配置
 
-打开 VS Code 设置并搜索“摸鱼养基”，即可调整以下选项：
+打开 VS Code 设置并搜索“touchFish-fund”，即可调整以下选项：
 
 | 配置项 | 默认值 | 说明 |
 | --- | --- | --- |
