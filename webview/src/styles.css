@@ -21,6 +21,7 @@ body,
   min-width: 260px;
   min-height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 body {
@@ -35,34 +36,64 @@ button {
 
 .portfolio {
   width: 100%;
+  padding-top: 48px;
   background: var(--surface);
 }
 
 .topbar {
-  min-height: 58px;
-  padding: 10px 12px;
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: 48px;
+  padding: 0 8px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
-}
-
-.eyebrow {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 16px;
-}
-
-.topbar h1 {
-  margin: 0;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 650;
+  background-color: color-mix(
+    in srgb,
+    var(--vscode-editor-background, var(--surface)) 50%,
+    transparent
+  );
+  backdrop-filter: saturate(180%) blur(15px);
+  -webkit-backdrop-filter: saturate(180%) blur(15px);
 }
 
 .topbar-actions {
   display: flex;
+  flex: 0 0 auto;
   gap: 2px;
+}
+
+.account-tabs {
+  min-width: 0;
+  flex: 1;
+}
+
+.account-tabs > .ant-tabs-nav {
+  min-height: 47px;
+  margin: 0;
+}
+
+.account-tabs .ant-tabs-nav-list {
+  padding: 0 8px;
+}
+
+.account-tabs .ant-tabs-content-holder {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .icon-button {
@@ -117,6 +148,20 @@ button {
   justify-content: flex-end;
 }
 
+.summary-profit-line {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.summary-profit-line .summary-value {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
 .summary-label .icon-button {
   width: 22px;
   height: 22px;
@@ -130,6 +175,13 @@ button {
   line-height: 1.22;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.summary-rate {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .summary-meta {
@@ -156,9 +208,13 @@ button {
   min-height: 38px;
   padding: 0 12px;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(68px, 0.7fr) minmax(76px, 0.78fr);
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(0, 0.58fr)
+    minmax(0, 0.68fr)
+    minmax(0, 0.72fr);
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   color: var(--muted);
   border-bottom: 1px solid var(--border);
   font-size: 11px;
@@ -172,14 +228,19 @@ button {
   min-height: 64px;
   padding: 8px 12px;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(68px, 0.7fr) minmax(76px, 0.78fr);
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(0, 0.58fr)
+    minmax(0, 0.68fr)
+    minmax(0, 0.72fr);
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .holding-main,
-.holding-board,
+.holding-day,
+.holding-valuation,
 .holding-profit {
   min-width: 0;
 }
@@ -215,7 +276,8 @@ button {
   color: #ff9f5a;
 }
 
-.holding-board,
+.holding-day,
+.holding-valuation,
 .holding-profit {
   text-align: right;
   font-size: 14px;
@@ -223,14 +285,192 @@ button {
   line-height: 20px;
 }
 
+.holding-day-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.estimate-badge {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 13px;
+  opacity: 0.72;
+}
+
+.updated-badge {
+  margin: 0 5px 0 0 !important;
+  padding: 0 3px;
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 13px;
+}
+
 .board-name {
+  min-width: 0;
+  margin-top: 0;
+  overflow: hidden;
+  line-height: 16px;
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .holding-rate {
   margin-top: 2px;
   font-size: 11px;
   line-height: 16px;
+}
+
+.spin-icon {
+  animation: spin 0.8s linear infinite;
+}
+
+.refresh-notice {
+  position: fixed;
+  z-index: 20;
+  top: 8px;
+  left: 50%;
+  min-width: max-content;
+  padding: 5px 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--vscode-foreground, #17234a);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--vscode-editorWidget-background, var(--surface));
+  box-shadow: 0 3px 12px rgb(0 0 0 / 14%);
+  transform: translateX(-50%);
+  font-size: 11px;
+}
+
+.market-spacer {
+  height: 38px;
+}
+
+.market-dock.expanded .market-spacer {
+  height: 137px;
+}
+
+.market-strip {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(
+    in srgb,
+    var(--vscode-editor-background, var(--surface)) 50%,
+    transparent
+  );
+  backdrop-filter: saturate(180%) blur(15px);
+  -webkit-backdrop-filter: saturate(180%) blur(15px);
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 8%);
+}
+
+.market-summary {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: minmax(76px, 1fr) auto auto auto 18px;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  color: var(--vscode-foreground, #17234a);
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.market-summary:hover {
+  background: var(--vscode-list-hoverBackground, rgb(127 127 127 / 8%));
+}
+
+.market-summary .market-name {
+  text-align: left;
+}
+
+.market-header {
+  min-height: 34px;
+  padding: 0 8px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.market-cards {
+  padding: 0 10px 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.market-card {
+  min-width: 112px;
+  padding: 9px 8px;
+  flex: 1 0 112px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background-color: color-mix(
+    in srgb,
+    var(--vscode-editorWidget-background, var(--surface)) 74%,
+    transparent
+  );
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.market-card.profit-up {
+  background: rgb(255 77 90 / 9%);
+}
+
+.market-card.profit-down {
+  background: rgb(0 181 120 / 9%);
+}
+
+.market-card .market-name {
+  overflow: hidden;
+  color: var(--vscode-foreground, #17234a);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-card strong {
+  display: block;
+  margin: 4px 0 2px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.market-card > div:last-child {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  font-size: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .login-view {
@@ -318,8 +558,22 @@ button {
 
   .table-head,
   .holding-row {
-    grid-template-columns: minmax(0, 1.25fr) 62px 68px;
+    grid-template-columns:
+      minmax(0, 1.7fr)
+      minmax(0, 1.05fr)
+      minmax(0, 0.95fr)
+      minmax(0, 1.3fr);
     gap: 5px;
     padding-inline: 9px;
+  }
+
+  .table-head {
+    font-size: 10px;
+  }
+
+  .holding-day,
+  .holding-valuation,
+  .holding-profit {
+    font-size: 12px;
   }
 }

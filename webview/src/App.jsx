@@ -4,26 +4,36 @@ import {
   ConfigProvider,
   Empty,
   Skeleton,
+  Spin,
+  Tabs,
   Tooltip,
   Typography,
   theme
 } from "antd";
 import {
   EyeOutlined,
+  DownOutlined,
   LogoutOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
-  StarFilled
+  StarFilled,
+  UpOutlined
 } from "@ant-design/icons";
 import { QRCodeSVG } from "qrcode.react";
 
 const DEMO_PORTFOLIO = {
-  accountName: "基金账户",
+  accountName: "航天员",
+  accounts: [
+    { id: 1, title: "航天员" },
+    { id: 2, title: "小鱼哥" }
+  ],
+  selectedAccountId: 1,
   totalAsset: 213124.6,
   todayProfit: -903.76,
+  todayProfitRate: -0.42,
   updatedAt: "14:30:00",
   holdings: [
-    { id: "110011", name: "易方达瑞锦灵活配置混合", amount: 119258.3, holdingProfit: 82.44, holdingRate: 0.07 },
+    { id: "110011", name: "易方达瑞锦灵活配置混合", amount: 119258.3, amountDate: "07-29", todayRate: -6.89, actualTodayProfit: -230.2, estimatedTodayProfit: -8216.9, relatedBoard: "海外基金", holdingProfit: 82.44, holdingRate: 0.07 },
     { id: "000066", name: "国金量化多因子股票 A", amount: 37159.92, holdingProfit: -800.68, holdingRate: -2.11, favorite: true },
     { id: "270042", name: "广发纳斯达克100ETF联接", amount: 10659.2, amountDate: "07-28", todayRate: -0.98, relatedBoard: "纳斯达克100", holdingProfit: 1599.2, holdingRate: 17.65 },
     { id: "014805", name: "国金量化多策略混合 A", amount: 7550.87, todayRate: 0.07, relatedBoard: "量化", holdingProfit: -949.13, holdingRate: -11.17 },
@@ -31,13 +41,20 @@ const DEMO_PORTFOLIO = {
     { id: "005827", name: "易方达科智量化精选混合", amount: 6073.25, holdingProfit: -426.75, holdingRate: -6.57 },
     { id: "016122", name: "华夏人工智能ETF联接", amount: 5059.07, todayRate: -0.63, relatedBoard: "中证人工智能", holdingProfit: 559.07, holdingRate: 12.42 },
     { id: "011102", name: "天弘中证新能源指数增强", amount: 3676.2, todayRate: 0.91, relatedBoard: "中证新能源", holdingProfit: -523.24, holdingRate: -12.45 }
+  ],
+  indices: [
+    { code: "1.000001", name: "上证指数", value: 3828.47, change: 15.16, changeRate: 0.4 },
+    { code: "0.399001", name: "深证成指", value: 13658.44, change: 148.76, changeRate: 1.1 },
+    { code: "0.399006", name: "创业板指", value: 3378.7, change: 51.67, changeRate: 1.55 },
+    { code: "1.000300", name: "沪深300", value: 4423.81, change: 26.31, changeRate: 0.6 }
   ]
 };
 
 const browserBridge = {
   postMessage(message) {
-    window.dispatchEvent(
-      new MessageEvent("message", {
+    const dispatch = () =>
+      window.dispatchEvent(
+        new MessageEvent("message", {
         data:
           message.type === "startLogin"
             ? {
@@ -53,11 +70,37 @@ const browserBridge = {
                   type: "initialState",
                   payload: { loggedIn: true, demo: true, portfolio: DEMO_PORTFOLIO }
                 }
+              : message.type === "selectAccount"
+                ? {
+                    type: "initialState",
+                    payload: {
+                      loggedIn: true,
+                      demo: true,
+                      portfolio: {
+                        ...DEMO_PORTFOLIO,
+                        accountName: message.accountId === 2 ? "小鱼哥" : "航天员",
+                        selectedAccountId: message.accountId,
+                        totalAsset: message.accountId === 2 ? 48260.18 : DEMO_PORTFOLIO.totalAsset,
+                        todayProfit: message.accountId === 2 ? 126.35 : DEMO_PORTFOLIO.todayProfit,
+                        todayProfitRate:
+                          message.accountId === 2 ? 0.26 : DEMO_PORTFOLIO.todayProfitRate,
+                        holdings:
+                          message.accountId === 2
+                            ? DEMO_PORTFOLIO.holdings.slice(0, 3)
+                            : DEMO_PORTFOLIO.holdings
+                      }
+                    }
+                  }
               : message.type === "logout"
                 ? { type: "signedOut" }
                 : { type: "initialState", payload: { loggedIn: false, demo: true } }
-      })
-    );
+        })
+      );
+    if (message.type === "refresh" || message.type === "selectAccount") {
+      window.setTimeout(dispatch, 1500);
+    } else {
+      dispatch();
+    }
   }
 };
 
@@ -121,11 +164,15 @@ function Summary({ portfolio, hidden, onToggle }) {
       </div>
       <div className="summary-item summary-profit">
         <div className="summary-label">
-          <ReloadOutlined />
           当日收益
         </div>
-        <div className={`summary-value ${tone(portfolio.todayProfit)}`}>
-          {hidden ? "••••" : signed(portfolio.todayProfit)}
+        <div className="summary-profit-line">
+          <div className={`summary-value ${tone(portfolio.todayProfit)}`}>
+            {hidden ? "••••" : signed(portfolio.todayProfit)}
+          </div>
+          <div className={`summary-rate ${tone(portfolio.todayProfitRate)}`}>
+            {hidden ? "••" : signed(portfolio.todayProfitRate, "%")}
+          </div>
         </div>
       </div>
       <div className="summary-meta">{portfolio.updatedAt} 更新</div>
@@ -133,7 +180,57 @@ function Summary({ portfolio, hidden, onToggle }) {
   );
 }
 
+function MarketStrip({ indices }) {
+  const [compact, setCompact] = useState(true);
+  if (!indices?.length) return null;
+  const primary = indices[0];
+
+  return (
+    <div className={`market-dock ${compact ? "compact" : "expanded"}`}>
+      <div className="market-spacer" aria-hidden="true" />
+      <section className="market-strip">
+        {compact ? (
+          <button className="market-summary" onClick={() => setCompact(false)}>
+            <span className="market-name">{primary.name}</span>
+            <span className={tone(primary.changeRate)}>{money.format(primary.value)}</span>
+            <span className={tone(primary.change)}>{signed(primary.change)}</span>
+            <span className={tone(primary.changeRate)}>{signed(primary.changeRate, "%")}</span>
+            <UpOutlined />
+          </button>
+        ) : (
+          <>
+            <div className="market-header">
+              <span>大盘指数</span>
+              <button className="icon-button" onClick={() => setCompact(true)} aria-label="收起指数">
+                <DownOutlined />
+              </button>
+            </div>
+            <div className="market-cards">
+              {indices.map((index) => (
+                <article className={`market-card ${tone(index.changeRate)}`} key={index.code}>
+                  <div className="market-name">{index.name}</div>
+                  <strong>{money.format(index.value)}</strong>
+                  <div>
+                    <span>{signed(index.change)}</span>
+                    <span>{signed(index.changeRate, "%")}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function HoldingRow({ fund, hidden }) {
+  const estimatedTodayProfit =
+    fund.estimatedTodayProfit ??
+    (fund.todayRate == null ? undefined : fund.amount * fund.todayRate / 100);
+  const todayProfit = fund.actualTodayProfit ?? estimatedTodayProfit;
+  const isEstimated = fund.actualTodayProfit == null && estimatedTodayProfit != null;
+
   return (
     <article className="holding-row">
       <div className="holding-main">
@@ -141,16 +238,31 @@ function HoldingRow({ fund, hidden }) {
           <div className="holding-name">{fund.name}</div>
         </Tooltip>
         <div className="holding-sub">
+          {fund.actualTodayProfit != null && <span className="updated-badge">已更新</span>}
           ¥ {hidden ? "••••" : money.format(fund.amount)}
           {fund.amountDate && <span>{fund.amountDate}</span>}
           {fund.favorite && <StarFilled className="favorite" />}
         </div>
       </div>
-      <div className="holding-board">
+      <div className="holding-day">
+        <Tooltip title={isEstimated ? "实时估算收益" : "当日收益"} placement="top">
+          <div className={`holding-day-value ${tone(todayProfit ?? 0)}`}>
+            {isEstimated && <span className="estimate-badge">估</span>}
+            {todayProfit == null
+              ? "—"
+              : hidden
+                ? "••••"
+                : signed(todayProfit)}
+          </div>
+        </Tooltip>
+      </div>
+      <div className="holding-valuation">
         <div className={tone(fund.todayRate ?? 0)}>
           {fund.todayRate == null ? "—" : signed(fund.todayRate, "%")}
         </div>
-        <div className="holding-sub board-name">{fund.relatedBoard || "—"}</div>
+        <Tooltip title={fund.relatedBoard || "暂无关联板块"} placement="top">
+          <div className="holding-sub board-name">{fund.relatedBoard || "—"}</div>
+        </Tooltip>
       </div>
       <div className="holding-profit">
         <div className={tone(fund.holdingProfit)}>
@@ -164,19 +276,38 @@ function HoldingRow({ fund, hidden }) {
   );
 }
 
-function PortfolioView({ portfolio, onRefresh, onLogout }) {
+function PortfolioView({ portfolio, busy, onRefresh, onLogout, onSelectAccount }) {
   const [hidden, setHidden] = useState(false);
+  const accountItems = portfolio.accounts.map((account) => ({
+    key: String(account.id),
+    label: account.title
+  }));
+  const sortedHoldings = [...portfolio.holdings].sort(
+    (left, right) =>
+      Number(right.actualTodayProfit != null) - Number(left.actualTodayProfit != null)
+  );
+
   return (
     <main className="portfolio">
       <header className="topbar">
-        <div>
-          <div className="eyebrow">账户汇总</div>
-          <h1>{portfolio.accountName}</h1>
-        </div>
+        <h1 className="sr-only">{portfolio.accountName}</h1>
+        <Tabs
+          className="account-tabs"
+          aria-label="基金账户"
+          size="small"
+          activeKey={String(portfolio.selectedAccountId)}
+          items={accountItems}
+          onChange={(accountId) => onSelectAccount(Number(accountId))}
+        />
         <div className="topbar-actions">
           <Tooltip title="刷新">
-            <button className="icon-button" onClick={onRefresh} aria-label="刷新">
-              <ReloadOutlined />
+            <button
+              className="icon-button"
+              onClick={onRefresh}
+              aria-label="刷新"
+              disabled={busy}
+            >
+              <ReloadOutlined className={busy ? "spin-icon" : ""} />
             </button>
           </Tooltip>
           <Tooltip title="退出登录">
@@ -189,16 +320,24 @@ function PortfolioView({ portfolio, onRefresh, onLogout }) {
       <Summary portfolio={portfolio} hidden={hidden} onToggle={() => setHidden((value) => !value)} />
       <div className="table-head">
         <span>基金 / 持有金额</span>
-        <span>当日估值</span>
+        <span>当日收益</span>
+        <span title="盘中估算涨跌幅，并非最终净值">实时估值</span>
         <span>持有收益</span>
       </div>
       <section className="holding-list">
-        {portfolio.holdings.length ? (
-          portfolio.holdings.map((fund) => <HoldingRow key={fund.id} fund={fund} hidden={hidden} />)
+        {sortedHoldings.length ? (
+          sortedHoldings.map((fund) => <HoldingRow key={fund.id} fund={fund} hidden={hidden} />)
         ) : (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无持仓" />
         )}
       </section>
+      <MarketStrip indices={portfolio.indices} />
+      {busy && (
+        <div className="refresh-notice" role="status">
+          <Spin size="small" />
+          <span>刷新中</span>
+        </div>
+      )}
     </main>
   );
 }
@@ -208,13 +347,18 @@ export function App() {
   const [qrSession, setQrSession] = useState();
   const [loginStatus, setLoginStatus] = useState("pending");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const isLight = !document.body.classList.contains("vscode-dark");
   const startLogin = useCallback(() => vscode.postMessage({ type: "startLogin" }), []);
   const demoLogin = useCallback(() => vscode.postMessage({ type: "demoLogin" }), []);
 
   useEffect(() => {
     const handleMessage = ({ data }) => {
-      if (data.type === "initialState") setState({ loading: false, ...data.payload });
+      if (data.type === "initialState") {
+        setState({ loading: false, ...data.payload });
+        setBusy(false);
+      }
+      if (data.type === "busy") setBusy(Boolean(data.payload));
       if (data.type === "qrSession") {
         setQrSession(data.payload);
         setLoginStatus("pending");
@@ -255,8 +399,16 @@ export function App() {
       ) : state.loggedIn && state.portfolio ? (
         <PortfolioView
           portfolio={state.portfolio}
-          onRefresh={() => vscode.postMessage({ type: "refresh" })}
+          busy={busy}
+          onRefresh={() => {
+            setBusy(true);
+            vscode.postMessage({ type: "refresh" });
+          }}
           onLogout={() => vscode.postMessage({ type: "logout" })}
+          onSelectAccount={(accountId) => {
+            setBusy(true);
+            vscode.postMessage({ type: "selectAccount", accountId });
+          }}
         />
       ) : (
         <LoginView
