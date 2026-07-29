@@ -1,0 +1,121 @@
+{
+  "name": "fund-view",
+  "displayName": "基金看板",
+  "description": "在 VS Code 侧边栏查看基金持仓和当日收益。",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.26.1",
+  "publisher": "ylw",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "fund",
+    "基金",
+    "收益",
+    "portfolio"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "fundView",
+          "title": "基金看板",
+          "icon": "media/fund.svg"
+        }
+      ]
+    },
+    "views": {
+      "fundView": [
+        {
+          "type": "webview",
+          "id": "fundView.portfolio",
+          "name": "我的基金"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "fundView.refresh",
+        "title": "基金看板：刷新"
+      },
+      {
+        "command": "fundView.login",
+        "title": "基金看板：扫码登录"
+      },
+      {
+        "command": "fundView.logout",
+        "title": "基金看板：退出登录"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "fundView.refresh",
+          "when": "view == fundView.portfolio",
+          "group": "navigation"
+        },
+        {
+          "command": "fundView.logout",
+          "when": "view == fundView.portfolio",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "基金看板",
+      "properties": {
+        "fundView.token": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "登录 Token。扫码登录成功后由插件自动写入。"
+        },
+        "fundView.apiBaseUrl": {
+          "type": "string",
+          "default": "https://browser-plug-api.yangjibao.com",
+          "markdownDescription": "养基宝 API 地址，必须使用 HTTPS。"
+        },
+        "fundView.useDemoData": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "仅用于界面开发的演示数据开关。开启后不会请求真实账户。"
+        },
+        "fundView.refreshInterval": {
+          "type": "number",
+          "default": 60,
+          "minimum": 60,
+          "markdownDescription": "收益刷新间隔（秒），最小 60 秒。"
+        },
+        "fundView.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "在状态栏显示当日收益。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "check": "pnpm typecheck && pnpm lint:webview",
+    "typecheck": "tsc --noEmit",
+    "lint:webview": "pnpm --dir webview lint",
+    "build:webview": "pnpm --dir webview build",
+    "build:extension": "node esbuild.mjs",
+    "build": "pnpm build:webview && pnpm build:extension",
+    "package": "pnpm build && vsce package --no-dependencies",
+    "publish:vscode": "vsce publish --no-dependencies",
+    "publish:openvsx": "ovsx publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.8",
+    "ovsx": "^1.0.2",
+    "typescript": "^5.8.3"
+  }
+}
