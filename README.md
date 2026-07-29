@@ -140,14 +140,21 @@ pnpm package
 
 ## 发布
 
-推送到 `main` 分支后，GitHub Actions 会执行检查、构建和打包，并依次发布到 Visual Studio Marketplace 与 Open VSX。
+项目使用 `standard-version` 根据 Conventional Commits 自动升级版本、生成 `CHANGELOG.md`、创建 `chore(release)` 提交并打 `v*` Tag：
+
+```bash
+pnpm changelog
+```
+
+推送普通提交到 `main` 后，Release Workflow 会执行检查和构建，再自动生成版本提交与 Tag。Tag 随后触发 Publish Workflow，将同一个 VSIX 发布到 Visual Studio Marketplace、Open VSX，并创建 GitHub Release。
 
 仓库需要配置以下 Actions Secrets：
 
+- `GH_RELEASE_PAT`：允许向当前仓库推送 `main` 和 Tag 的 GitHub Token
 - `VSCE_PAT`：Visual Studio Marketplace 发布令牌
 - `OVSX_PAT`：Open VSX 发布令牌
 
-发布前还需确保 `package.json` 中的 `publisher` 已在两个市场创建并保持同名，同时更新扩展版本号。
+发布前还需确保 `package.json` 中的 `publisher` 已在两个市场创建并保持同名。版本号由 `standard-version` 自动维护，不要手动修改。
 
 ## 贡献
 

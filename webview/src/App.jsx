@@ -186,7 +186,6 @@ function MarketStrip({ indices }) {
 
   return (
     <div className={`market-dock ${compact ? "compact" : "expanded"}`}>
-      <div className="market-spacer" aria-hidden="true" />
       <section className="market-strip">
         {compact ? (
           <button className="market-summary" onClick={() => setCompact(false)}>
@@ -313,7 +312,7 @@ function PortfolioView({ portfolio, busy, onRefresh, onLogout, onSelectAccount }
         <span>实时估值</span>
         <span>持有收益</span>
       </div>
-      <section className="holding-list">
+      <section className="holding-list" key={portfolio.selectedAccountId}>
         {sortedHoldings.length ? (
           sortedHoldings.map((fund) => <HoldingRow key={fund.id} fund={fund} hidden={hidden} />)
         ) : (

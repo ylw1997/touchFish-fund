@@ -19,13 +19,14 @@ html,
 body,
 #root {
   min-width: 260px;
-  min-height: 100%;
+  height: 100%;
+  min-height: 0;
   margin: 0;
   padding: 0;
 }
 
 body {
-  overflow-x: hidden;
+  overflow: hidden;
   background: var(--surface);
   -webkit-font-smoothing: antialiased;
 }
@@ -36,19 +37,21 @@ button {
 
 .portfolio {
   width: 100%;
-  padding-top: 48px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface);
 }
 
 .topbar {
-  position: fixed;
+  position: relative;
   z-index: 10;
-  top: 0;
-  right: 0;
-  left: 0;
   min-height: 48px;
   padding: 0 8px 0 0;
   display: flex;
+  flex: 0 0 48px;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
@@ -122,6 +125,7 @@ button {
   min-height: 104px;
   padding: 15px 12px 19px;
   display: grid;
+  flex: 0 0 auto;
   grid-template-columns: minmax(0, 1fr) minmax(108px, auto);
   gap: 12px;
   border-bottom: 1px solid var(--border);
@@ -208,6 +212,7 @@ button {
   min-height: 38px;
   padding: 0 12px;
   display: grid;
+  flex: 0 0 38px;
   grid-template-columns:
     minmax(0, 1.25fr)
     minmax(0, 0.58fr)
@@ -236,6 +241,15 @@ button {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border);
+}
+
+.holding-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .holding-main,
@@ -354,20 +368,14 @@ button {
   font-size: 11px;
 }
 
-.market-spacer {
-  height: 38px;
-}
-
-.market-dock.expanded .market-spacer {
-  height: 137px;
+.market-dock {
+  position: relative;
+  z-index: 10;
+  flex: 0 0 auto;
 }
 
 .market-strip {
-  position: fixed;
-  z-index: 10;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  position: relative;
   border-top: 1px solid var(--border);
   background-color: color-mix(
     in srgb,

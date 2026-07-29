@@ -2,19 +2,22 @@ name: Publish extension
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: publish-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -26,17 +29,35 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate publish secrets
+        run: |
+          test -n "$VSCE_PAT" || (echo "Missing VSCE_PAT secret" && exit 1)
+          test -n "$OVSX_PAT" || (echo "Missing OVSX_PAT secret" && exit 1)
+
+      - name: Validate tag matches package version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          test "$PACKAGE_VERSION" = "$TAG_VERSION" || (echo "Tag version $TAG_VERSION does not match package.json version $PACKAGE_VERSION" && exit 1)
+
       - name: Check and build
         run: |
-          pnpm typecheck
+          pnpm check
           pnpm build
-      - name: Package
-        run: pnpm exec vsce package --no-dependencies --out fund-view.vsix
+
+      - name: Package VSIX
+        run: pnpm exec vsce package --no-dependencies
+
       - name: Publish to Visual Studio Marketplace
-        run: pnpm exec vsce publish --packagePath fund-view.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: pnpm exec vsce publish --packagePath "touchFish-fund-${GITHUB_REF_NAME#v}.vsix" --pat "$VSCE_PAT"
+
       - name: Publish to Open VSX
-        run: pnpm exec ovsx publish fund-view.vsix
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: pnpm exec ovsx publish "touchFish-fund-${GITHUB_REF_NAME#v}.vsix" -p "$OVSX_PAT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: "*.vsix"

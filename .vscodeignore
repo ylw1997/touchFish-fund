@@ -2,6 +2,7 @@
 .github/**
 .vscode/**
 .gitignore
+.versionrc
 esbuild.mjs
 pnpm-lock.yaml
 pnpm-workspace.yaml
