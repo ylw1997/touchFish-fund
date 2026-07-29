@@ -1,33 +1,165 @@
-# 基金看板
+# 摸鱼养基
 
-一个紧凑的 VS Code 基金持仓侧边栏。扫码登录后展示账户资产、当日收益和持仓明细，并每分钟刷新状态栏收益。
+在 VS Code 侧边栏查看基金账户、持仓收益与大盘行情，不离开编辑器也能快速了解账户变化。
+
+[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-007ACC?logo=visualstudiocode)](https://code.visualstudio.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Publish extension](https://github.com/ylw1997/touchFish-fund/actions/workflows/publish.yml/badge.svg)](https://github.com/ylw1997/touchFish-fund/actions/workflows/publish.yml)
+
+> 本插件是第三方开源项目，与养基宝官方无隶属或合作关系。页面中的盘中估值、收益等数据仅供参考，不构成任何投资建议，请以基金公司最终公布的数据为准。
+
+## 功能特性
+
+- 扫码登录养基宝账户，无需在 VS Code 内输入账号和密码
+- 展示账户总资产、当日收益、收益率及更新时间
+- 按账户切换并查看基金持仓
+- 展示持有金额、当日收益、实时估值、持有收益和关联板块
+- 区分已更新收益与盘中估算收益
+- 展示上证指数、深证成指、创业板指和沪深 300
+- 一键隐藏资产及收益金额
+- 在 VS Code 状态栏持续展示当前账户的当日收益
+- 支持手动刷新和可配置的定时刷新
+- 自动适配 VS Code 明暗主题
+- 提供本地演示数据，方便界面开发和功能体验
+
+## 安装
+
+### 扩展市场
+
+在 VS Code 扩展面板中搜索“摸鱼养基”，然后点击“安装”。
+
+### VSIX 安装
+
+从 [Releases](https://github.com/ylw1997/touchFish-fund/releases) 下载 `.vsix` 文件，在 VS Code 中执行：
+
+1. 打开扩展面板。
+2. 点击右上角 `…`。
+3. 选择“从 VSIX 安装…”。
+4. 选择下载的文件并按提示完成安装。
+
+也可以使用命令行：
+
+```bash
+code --install-extension touchFish-fund-0.1.0.vsix
+```
+
+## 使用方法
+
+1. 点击活动栏中的“摸鱼养基”图标。
+2. 使用账户所属客户端扫描二维码。
+3. 在手机端确认登录。
+4. 登录成功后，插件会自动加载账户资产和基金持仓。
+
+看板顶部可切换不同账户、手动刷新或退出登录。点击资产旁的眼睛图标可以临时隐藏金额；点击底部大盘区域可以展开或收起指数详情。
+
+也可以通过命令面板执行：
+
+- `摸鱼养基：扫码登录`
+- `摸鱼养基：退出登录`
+
+## 配置
+
+打开 VS Code 设置并搜索“摸鱼养基”，即可调整以下选项：
+
+| 配置项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `fundView.refreshInterval` | `60` | 状态栏收益刷新间隔，单位为秒，最小 60 秒 |
+| `fundView.showStatusBar` | `true` | 是否在状态栏显示当日收益 |
+| `fundView.useDemoData` | `false` | 使用内置演示账户，不请求真实账户数据 |
+| `fundView.selectedAccountId` | `0` | 当前账户 ID，由账户切换功能自动维护 |
+| `fundView.token` | 空 | 登录 Token，由扫码登录流程自动写入 |
+
+`fundView.useDemoData` 主要面向开发和界面预览。启用后，在登录页可直接进入演示账户。
+
+## 数据与隐私
+
+- 插件不要求输入养基宝账号或密码，登录由二维码确认流程完成。
+- 账户和持仓数据由扩展宿主直接请求固定的养基宝 HTTPS 接口，Webview 不直接访问该服务。
+- 项目代码中未包含统计、广告或遥测上报。
+- 登录 Token 当前保存在 VS Code 全局配置 `fundView.token` 中，可能显示在用户设置 JSON 内。请勿分享包含该配置的文件或日志；使用公共设备后请及时退出登录。
+- 点击退出登录会清除本地 Token，但不会注销其他设备上的会话。
+
+## 常见问题
+
+### 二维码过期怎么办？
+
+二维码有效期约为 2 分钟。点击登录页的“刷新二维码”重新获取即可。
+
+### 状态栏显示“刷新失败”
+
+请检查网络连接和养基宝服务状态。若 Token 已失效，插件会提示重新扫码登录。
+
+### 为什么当日收益和最终结果不同？
+
+基金净值公布前，部分数据基于盘中估值计算。看板会用“估”标识估算收益；最终结果以基金公司公布的净值为准。
+
+### 为什么最低只能每 60 秒刷新一次？
+
+限制刷新频率可以减少不必要的接口请求，并降低触发服务端限流的概率。
+
+### 如何彻底清除登录信息？
+
+先在看板中点击退出登录，再检查 VS Code 用户设置中是否仍存在 `fundView.token`。
 
 ## 本地开发
 
+### 环境要求
+
+- Node.js 20 或更高版本
+- pnpm 10
+- VS Code 1.90 或更高版本
+
+### 启动
+
 ```bash
+git clone https://github.com/ylw1997/touchFish-fund.git
+cd touchFish-fund
 pnpm install
 pnpm build
 ```
 
-按 `F5` 启动扩展开发宿主。默认直连养基宝 HTTPS 接口；仅在界面开发时可打开 `fundView.useDemoData` 使用内置演示账户。
+使用 VS Code 打开项目并按 `F5`，即可启动扩展开发宿主。仅开发 Webview 界面时，可以开启 `fundView.useDemoData`，避免请求真实账户。
 
-## 养基宝接口
+### 常用命令
 
-插件默认请求 `https://browser-plug-api.yangjibao.com`，在扩展宿主内按养基宝协议生成 `Request-Time` 与 `Request-Sign`。实际调用：
+```bash
+# TypeScript 检查和 Webview Lint
+pnpm check
 
-- `GET /qr_code`：创建二维码
-- `GET /qr_code_state/:id`：每 3 秒轮询扫码状态，最长 2 分钟
-- `GET /user_account`：读取账户
-- `GET /account_collect`：读取总资产和当日收益
-- `GET /fund_hold?account_id=:id`：读取并归一化各账户持仓
+# 构建 Webview 和扩展
+pnpm build
 
-扫码成功后的 token 会按需求写入 VS Code 全局配置 `fundView.token`。这意味着它会显示在用户设置 JSON 中；如后续允许更安全的实现，建议迁移到 VS Code SecretStorage。
+# 生成 VSIX 安装包
+pnpm package
+```
 
-## 自动发布
+项目主要由两部分组成：
 
-每次推送 `main` 分支，GitHub Actions 会构建、打包，并依次发布到 Visual Studio Marketplace 和 Open VSX。仓库需配置：
+- `src/`：VS Code 扩展宿主、登录轮询、接口请求和数据归一化
+- `webview/`：React + Ant Design 实现的侧边栏界面
 
-- `VSCE_PAT`：Azure DevOps Personal Access Token
-- `OVSX_PAT`：Open VSX Access Token
+## 发布
 
-首次发布前还需确保 `package.json` 的 `publisher` 已分别在两个市场创建，并保持同名。
+推送到 `main` 分支后，GitHub Actions 会执行检查、构建和打包，并依次发布到 Visual Studio Marketplace 与 Open VSX。
+
+仓库需要配置以下 Actions Secrets：
+
+- `VSCE_PAT`：Visual Studio Marketplace 发布令牌
+- `OVSX_PAT`：Open VSX 发布令牌
+
+发布前还需确保 `package.json` 中的 `publisher` 已在两个市场创建并保持同名，同时更新扩展版本号。
+
+## 贡献
+
+欢迎通过 [Issues](https://github.com/ylw1997/touchFish-fund/issues) 报告问题或提出建议。提交 Pull Request 前，请先运行：
+
+```bash
+pnpm check
+pnpm build
+```
+
+提交问题时请尽量提供 VS Code 版本、插件版本、复现步骤和错误提示。请勿上传 Token、账户名称、持仓金额等敏感信息。
+
+## 开源许可
+
+本项目基于 [MIT License](LICENSE) 开源。
