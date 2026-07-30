@@ -1,6 +1,13 @@
 # 更新历史 
 
 
+## [1.2.0](https://github.com/ylw1997/touchFish-fund/compare/v1.1.0...v1.2.0) (2026-07-30)
+
+
+### ✨ Features | 新功能
+
+* 添加 useDefaultTextColor 配置，支持主题默认文字颜色显示收益和涨跌 ([f70d007](https://github.com/ylw1997/touchFish-fund/commit/f70d007c84cda29a8bc06ea021de6448f7c810bc))
+
 ## 1.1.0 (2026-07-29)
 
 
