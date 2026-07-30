@@ -2,7 +2,7 @@
   "name": "touchFish-fund",
   "displayName": "touchFish-fund",
   "description": "在 VS Code 侧边栏查看基金持仓和当日收益。",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "packageManager": "pnpm@10.26.1",
   "publisher": "ylw",
   "license": "MIT",

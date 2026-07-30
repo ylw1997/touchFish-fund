@@ -1,6 +1,8 @@
 # 更新历史 
 
 
+### [1.2.1](https://github.com/ylw1997/touchFish-fund/compare/v1.2.0...v1.2.1) (2026-07-30)
+
 ## [1.2.0](https://github.com/ylw1997/touchFish-fund/compare/v1.1.0...v1.2.0) (2026-07-30)
 
 
