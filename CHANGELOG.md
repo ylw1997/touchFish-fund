@@ -1,6 +1,13 @@
 # 更新历史 
 
 
+## [1.3.0](https://github.com/ylw1997/touchFish-fund/compare/v1.2.1...v1.3.0) (2026-07-30)
+
+
+### ✨ Features | 新功能
+
+* 简化持仓收益布局 ([b2a80c7](https://github.com/ylw1997/touchFish-fund/commit/b2a80c75c2d9aadf7b761baf01803321c9d62d12))
+
 ### [1.2.1](https://github.com/ylw1997/touchFish-fund/compare/v1.2.0...v1.2.1) (2026-07-30)
 
 ## [1.2.0](https://github.com/ylw1997/touchFish-fund/compare/v1.1.0...v1.2.0) (2026-07-30)
