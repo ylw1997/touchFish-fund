@@ -6,7 +6,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Publish extension](https://github.com/ylw1997/touchFish-fund/actions/workflows/publish.yml/badge.svg)](https://github.com/ylw1997/touchFish-fund/actions/workflows/publish.yml)
 
-> 本插件是第三方开源项目，与养基宝官方无隶属或合作关系。页面中的盘中估值、收益等数据仅供参考，不构成任何投资建议，请以基金公司最终公布的数据为准。
+> 本插件是第三方开源项目，无隶属或合作关系。页面中的盘中估值、收益等数据仅供参考，不构成任何投资建议，请以基金公司最终公布的数据为准。
+<img width="813" height="1185" alt="image" src="https://github.com/user-attachments/assets/5bbd51ea-9541-4f34-80c3-864dd47c15a1" />
 
 ## 功能特性
 
