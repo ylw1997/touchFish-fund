@@ -49,6 +49,9 @@ const DEMO_PORTFOLIO = {
   ]
 };
 
+const previewUsesDefaultTextColor =
+  new URLSearchParams(window.location.search).get("defaultTextColor") === "1";
+
 const browserBridge = {
   postMessage(message) {
     const dispatch = () =>
@@ -67,7 +70,12 @@ const browserBridge = {
             : message.type === "demoLogin" || message.type === "refresh"
               ? {
                   type: "initialState",
-                  payload: { loggedIn: true, demo: true, portfolio: DEMO_PORTFOLIO }
+                  payload: {
+                    loggedIn: true,
+                    demo: true,
+                    useDefaultTextColor: previewUsesDefaultTextColor,
+                    portfolio: DEMO_PORTFOLIO
+                  }
                 }
               : message.type === "selectAccount"
                 ? {
@@ -75,6 +83,7 @@ const browserBridge = {
                     payload: {
                       loggedIn: true,
                       demo: true,
+                      useDefaultTextColor: previewUsesDefaultTextColor,
                       portfolio: {
                         ...DEMO_PORTFOLIO,
                         accountName: message.accountId === 2 ? "小鱼哥" : "航天员",
@@ -92,7 +101,14 @@ const browserBridge = {
                   }
               : message.type === "logout"
                 ? { type: "signedOut" }
-                : { type: "initialState", payload: { loggedIn: false, demo: true } }
+                : {
+                    type: "initialState",
+                    payload: {
+                      loggedIn: false,
+                      demo: true,
+                      useDefaultTextColor: previewUsesDefaultTextColor
+                    }
+                  }
         })
       );
     if (message.type === "refresh" || message.type === "selectAccount") {
@@ -268,7 +284,14 @@ function HoldingRow({ fund, hidden }) {
   );
 }
 
-function PortfolioView({ portfolio, busy, onRefresh, onLogout, onSelectAccount }) {
+function PortfolioView({
+  portfolio,
+  busy,
+  useDefaultTextColor,
+  onRefresh,
+  onLogout,
+  onSelectAccount
+}) {
   const [hidden, setHidden] = useState(false);
   const accountItems = portfolio.accounts.map((account) => ({
     key: String(account.id),
@@ -280,7 +303,7 @@ function PortfolioView({ portfolio, busy, onRefresh, onLogout, onSelectAccount }
   );
 
   return (
-    <main className="portfolio">
+    <main className={`portfolio ${useDefaultTextColor ? "default-profit-color" : ""}`}>
       <header className="topbar">
         <h1 className="sr-only">{portfolio.accountName}</h1>
         <Tabs
@@ -388,6 +411,7 @@ export function App() {
         <PortfolioView
           portfolio={state.portfolio}
           busy={busy}
+          useDefaultTextColor={Boolean(state.useDefaultTextColor)}
           onRefresh={() => {
             setBusy(true);
             vscode.postMessage({ type: "refresh" });

@@ -65,6 +65,7 @@ code --install-extension touchFish-fund-0.1.0.vsix
 | --- | --- | --- |
 | `fundView.refreshInterval` | `60` | 状态栏收益刷新间隔，单位为秒，最小 60 秒 |
 | `fundView.showStatusBar` | `true` | 是否在状态栏显示当日收益 |
+| `fundView.useDefaultTextColor` | `false` | 使用主题默认文字颜色显示收益和涨跌；关闭时使用红涨绿跌 |
 | `fundView.useDemoData` | `false` | 使用内置演示账户，不请求真实账户数据 |
 | `fundView.selectedAccountId` | `0` | 当前账户 ID，由账户切换功能自动维护 |
 | `fundView.token` | 空 | 登录 Token，由扫码登录流程自动写入 |

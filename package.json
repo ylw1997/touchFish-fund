@@ -93,6 +93,11 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "在状态栏显示当日收益。"
+        },
+        "fundView.useDefaultTextColor": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "使用 VS Code 主题默认文字颜色显示收益和涨跌数据；关闭时使用红涨绿跌。"
         }
       }
     }

@@ -453,6 +453,21 @@ button {
   background: rgb(0 181 120 / 9%);
 }
 
+.default-profit-color .profit-up,
+.default-profit-color .profit-down,
+.default-profit-color .profit-flat {
+  color: var(--vscode-foreground, #17234a);
+}
+
+.default-profit-color .market-card.profit-up,
+.default-profit-color .market-card.profit-down {
+  background-color: color-mix(
+    in srgb,
+    var(--vscode-editorWidget-background, var(--surface)) 74%,
+    transparent
+  );
+}
+
 .market-card .market-name {
   overflow: hidden;
   color: var(--vscode-foreground, #17234a);

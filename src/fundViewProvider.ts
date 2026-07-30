@@ -27,7 +27,15 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
   }
 
   async refresh(): Promise<void> {
-    await this.sendInitialState(true);
+    if (!this.view) return;
+    try {
+      await this.sendInitialState(true);
+    } catch (error) {
+      await this.view.webview.postMessage({
+        type: "error",
+        message: error instanceof Error ? error.message : "刷新失败"
+      });
+    }
   }
 
   async showLogin(): Promise<void> {
@@ -45,6 +53,7 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
           break;
         case "refresh":
           await this.sendInitialState(true);
+          await this.onPortfolioUpdated();
           break;
         case "startLogin": {
           this.stopPolling();
@@ -131,7 +140,11 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
       if (!this.api.token) {
         await this.view?.webview.postMessage({
           type: "initialState",
-          payload: { loggedIn: false, demo: this.api.isDemo }
+          payload: {
+            loggedIn: false,
+            demo: this.api.isDemo,
+            useDefaultTextColor: this.useDefaultTextColor
+          }
         });
         return;
       }
@@ -139,13 +152,24 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
       const portfolio = await this.api.getPortfolio();
       await this.view?.webview.postMessage({
         type: "initialState",
-        payload: { loggedIn: true, demo: this.api.isDemo, portfolio }
+        payload: {
+          loggedIn: true,
+          demo: this.api.isDemo,
+          useDefaultTextColor: this.useDefaultTextColor,
+          portfolio
+        }
       });
     } finally {
       if (showBusy) {
         await this.view?.webview.postMessage({ type: "busy", payload: false });
       }
     }
+  }
+
+  private get useDefaultTextColor(): boolean {
+    return vscode.workspace
+      .getConfiguration("fundView")
+      .get<boolean>("useDefaultTextColor", false);
   }
 
   private getHtml(webview: vscode.Webview): string {

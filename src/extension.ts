@@ -43,13 +43,24 @@ export function activate(context: vscode.ExtensionContext): void {
     webviewOptions: { retainContextWhenHidden: true }
   });
 
+  let refreshPromise: Promise<void> | undefined;
+  const refreshAll = (): Promise<void> => {
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = Promise.all([provider.refresh(), updateStatus()])
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = undefined;
+      });
+    return refreshPromise;
+  };
+
   const refresh = vscode.commands.registerCommand("fundView.refresh", async () => {
-    await Promise.all([provider.refresh(), updateStatus()]);
+    await refreshAll();
   });
   const open = vscode.commands.registerCommand("fundView.open", async () => {
     await vscode.commands.executeCommand("workbench.view.extension.fundView");
     await vscode.commands.executeCommand("fundView.portfolio.focus");
-    await provider.refresh();
+    await refreshAll();
   });
   const login = vscode.commands.registerCommand("fundView.login", async () => {
     await vscode.commands.executeCommand("workbench.view.extension.fundView");
@@ -62,7 +73,7 @@ export function activate(context: vscode.ExtensionContext): void {
   });
   const configListener = vscode.workspace.onDidChangeConfiguration((event) => {
     if (event.affectsConfiguration("fundView")) {
-      void Promise.all([provider.refresh(), updateStatus()]);
+      void refreshAll();
       restartTimer();
     }
   });
@@ -74,7 +85,7 @@ export function activate(context: vscode.ExtensionContext): void {
       60,
       vscode.workspace.getConfiguration("fundView").get<number>("refreshInterval", 60)
     );
-    refreshTimer = setInterval(() => void updateStatus(), seconds * 1000);
+    refreshTimer = setInterval(() => void refreshAll(), seconds * 1000);
   };
 
   restartTimer();
