@@ -12,7 +12,6 @@ import {
 import {
   EyeOutlined,
   DownOutlined,
-  LogoutOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   StarFilled,
@@ -256,8 +255,11 @@ function HoldingRow({ fund, hidden }) {
           {fund.favorite && <StarFilled className="favorite" />}
         </div>
       </div>
-      <div className="holding-day">
-        <div className={`holding-day-value ${tone(todayProfit ?? 0)}`}>
+      <div className="holding-valuation">
+        <div className={tone(fund.todayRate ?? 0)}>
+          {fund.todayRate == null ? "—" : signed(fund.todayRate, "%")}
+        </div>
+        <div className={`holding-valuation-profit ${tone(todayProfit ?? 0)}`}>
           {isEstimated && <span className="estimate-badge">估</span>}
           {todayProfit == null
             ? "—"
@@ -265,12 +267,6 @@ function HoldingRow({ fund, hidden }) {
               ? "••••"
               : signed(todayProfit)}
         </div>
-      </div>
-      <div className="holding-valuation">
-        <div className={tone(fund.todayRate ?? 0)}>
-          {fund.todayRate == null ? "—" : signed(fund.todayRate, "%")}
-        </div>
-        <div className="holding-sub board-name">{fund.relatedBoard || "—"}</div>
       </div>
       <div className="holding-profit">
         <div className={tone(fund.holdingProfit)}>
@@ -289,7 +285,6 @@ function PortfolioView({
   busy,
   useDefaultTextColor,
   onRefresh,
-  onLogout,
   onSelectAccount
 }) {
   const [hidden, setHidden] = useState(false);
@@ -323,15 +318,11 @@ function PortfolioView({
           >
             <ReloadOutlined className={busy ? "spin-icon" : ""} />
           </button>
-          <button className="icon-button" onClick={onLogout} aria-label="退出登录">
-            <LogoutOutlined />
-          </button>
         </div>
       </header>
       <Summary portfolio={portfolio} hidden={hidden} onToggle={() => setHidden((value) => !value)} />
       <div className="table-head">
         <span>基金 / 持有金额</span>
-        <span>当日收益</span>
         <span>实时估值</span>
         <span>持有收益</span>
       </div>
@@ -416,7 +407,6 @@ export function App() {
             setBusy(true);
             vscode.postMessage({ type: "refresh" });
           }}
-          onLogout={() => vscode.postMessage({ type: "logout" })}
           onSelectAccount={(accountId) => {
             setBusy(true);
             vscode.postMessage({ type: "selectAccount", accountId });

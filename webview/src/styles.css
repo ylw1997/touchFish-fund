@@ -214,10 +214,9 @@ button {
   display: grid;
   flex: 0 0 38px;
   grid-template-columns:
-    minmax(0, 1.25fr)
-    minmax(0, 0.58fr)
-    minmax(0, 0.68fr)
-    minmax(0, 0.72fr);
+    minmax(0, 1.35fr)
+    minmax(0, 0.78fr)
+    minmax(0, 0.82fr);
   align-items: center;
   gap: 12px;
   color: var(--muted);
@@ -234,10 +233,9 @@ button {
   padding: 8px 12px;
   display: grid;
   grid-template-columns:
-    minmax(0, 1.25fr)
-    minmax(0, 0.58fr)
-    minmax(0, 0.68fr)
-    minmax(0, 0.72fr);
+    minmax(0, 1.35fr)
+    minmax(0, 0.78fr)
+    minmax(0, 0.82fr);
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border);
@@ -253,7 +251,6 @@ button {
 }
 
 .holding-main,
-.holding-day,
 .holding-valuation,
 .holding-profit {
   min-width: 0;
@@ -290,7 +287,6 @@ button {
   color: #ff9f5a;
 }
 
-.holding-day,
 .holding-valuation,
 .holding-profit {
   text-align: right;
@@ -299,12 +295,15 @@ button {
   line-height: 20px;
 }
 
-.holding-day-value {
+.holding-valuation-profit {
+  margin-top: 2px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 3px;
   max-width: 100%;
+  font-size: 11px;
+  line-height: 16px;
   white-space: nowrap;
 }
 
@@ -327,16 +326,6 @@ button {
   border-radius: 3px;
   font-size: 9px;
   line-height: 13px;
-}
-
-.board-name {
-  min-width: 0;
-  margin-top: 0;
-  overflow: hidden;
-  line-height: 16px;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .holding-rate {
@@ -582,10 +571,9 @@ button {
   .table-head,
   .holding-row {
     grid-template-columns:
-      minmax(0, 1.7fr)
-      minmax(0, 1.05fr)
-      minmax(0, 0.95fr)
-      minmax(0, 1.3fr);
+      minmax(0, 1.55fr)
+      minmax(0, 1fr)
+      minmax(0, 1.15fr);
     gap: 5px;
     padding-inline: 9px;
   }
@@ -594,7 +582,6 @@ button {
     font-size: 10px;
   }
 
-  .holding-day,
   .holding-valuation,
   .holding-profit {
     font-size: 12px;
