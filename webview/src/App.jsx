@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   ConfigProvider,
@@ -50,6 +50,31 @@ const DEMO_PORTFOLIO = {
 
 const previewUsesDefaultTextColor =
   new URLSearchParams(window.location.search).get("defaultTextColor") === "1";
+let previewRefreshCount = 0;
+
+function createRefreshedDemoPortfolio() {
+  previewRefreshCount += 1;
+  const offset = previewRefreshCount;
+  return {
+    ...DEMO_PORTFOLIO,
+    totalAsset: DEMO_PORTFOLIO.totalAsset + offset * 86.42,
+    todayProfit: DEMO_PORTFOLIO.todayProfit - offset * 13.27,
+    todayProfitRate: DEMO_PORTFOLIO.todayProfitRate - offset * 0.01,
+    updatedAt: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+    holdings: DEMO_PORTFOLIO.holdings.map((fund, index) => ({
+      ...fund,
+      todayRate:
+        fund.todayRate == null ? undefined : fund.todayRate + offset * (index % 2 ? 0.02 : -0.01),
+      holdingProfit: fund.holdingProfit + offset * (index % 2 ? 5.31 : -3.86)
+    })),
+    indices: DEMO_PORTFOLIO.indices.map((index, position) => ({
+      ...index,
+      value: index.value + offset * (position + 1) * 0.37,
+      change: index.change + offset * 0.21,
+      changeRate: index.changeRate + offset * 0.01
+    }))
+  };
+}
 
 const browserBridge = {
   postMessage(message) {
@@ -73,7 +98,10 @@ const browserBridge = {
                     loggedIn: true,
                     demo: true,
                     useDefaultTextColor: previewUsesDefaultTextColor,
-                    portfolio: DEMO_PORTFOLIO
+                    portfolio:
+                      message.type === "refresh"
+                        ? createRefreshedDemoPortfolio()
+                        : DEMO_PORTFOLIO
                   }
                 }
               : message.type === "selectAccount"
@@ -132,6 +160,74 @@ function signed(value, suffix = "") {
   return `${value > 0 ? "+" : ""}${money.format(value)}${suffix}`;
 }
 
+function useAnimatedNumber(value, resetKey) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const displayRef = useRef(value);
+  const resetKeyRef = useRef(resetKey);
+
+  useEffect(() => {
+    const isNumber = typeof value === "number" && Number.isFinite(value);
+    const currentIsNumber =
+      typeof displayRef.current === "number" && Number.isFinite(displayRef.current);
+    const resetChanged = resetKeyRef.current !== resetKey;
+    resetKeyRef.current = resetKey;
+
+    if (
+      !isNumber ||
+      !currentIsNumber ||
+      resetChanged ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      displayRef.current = value;
+      setDisplayValue(value);
+      return undefined;
+    }
+
+    const from = displayRef.current;
+    const difference = value - from;
+    if (difference === 0) return undefined;
+
+    const duration = 1000;
+    const startedAt = performance.now();
+    let frameId;
+    const animate = (now) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextValue = from + difference * eased;
+      displayRef.current = nextValue;
+      setDisplayValue(nextValue);
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(animate);
+      } else {
+        displayRef.current = value;
+      }
+    };
+
+    frameId = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [resetKey, value]);
+
+  return displayValue;
+}
+
+function AnimatedNumber({
+  value,
+  signedValue = false,
+  suffix = "",
+  hidden = false,
+  hiddenText = "••••",
+  resetKey
+}) {
+  const displayValue = useAnimatedNumber(value, resetKey);
+  if (hidden) return hiddenText;
+  if (displayValue == null) return "—";
+  return (
+    <span className="animated-number">
+      {signedValue ? signed(displayValue, suffix) : `${money.format(displayValue)}${suffix}`}
+    </span>
+  );
+}
+
 function LoginView({ qrSession, loginStatus, error, demo, onStart, onDemo }) {
   useEffect(() => {
     onStart();
@@ -165,6 +261,7 @@ function LoginView({ qrSession, loginStatus, error, demo, onStart, onDemo }) {
 }
 
 function Summary({ portfolio, hidden, onToggle }) {
+  const resetKey = portfolio.selectedAccountId;
   return (
     <section className="summary">
       <div className="summary-item">
@@ -174,7 +271,14 @@ function Summary({ portfolio, hidden, onToggle }) {
             <EyeOutlined />
           </button>
         </div>
-        <div className="summary-value">{hidden ? "••••••" : money.format(portfolio.totalAsset)}</div>
+        <div className="summary-value">
+          <AnimatedNumber
+            value={portfolio.totalAsset}
+            hidden={hidden}
+            hiddenText="••••••"
+            resetKey={resetKey}
+          />
+        </div>
       </div>
       <div className="summary-item summary-profit">
         <div className="summary-label">
@@ -182,10 +286,22 @@ function Summary({ portfolio, hidden, onToggle }) {
         </div>
         <div className="summary-profit-line">
           <div className={`summary-value ${tone(portfolio.todayProfit)}`}>
-            {hidden ? "••••" : signed(portfolio.todayProfit)}
+            <AnimatedNumber
+              value={portfolio.todayProfit}
+              signedValue
+              hidden={hidden}
+              resetKey={resetKey}
+            />
           </div>
           <div className={`summary-rate ${tone(portfolio.todayProfitRate)}`}>
-            {hidden ? "••" : signed(portfolio.todayProfitRate, "%")}
+            <AnimatedNumber
+              value={portfolio.todayProfitRate}
+              signedValue
+              suffix="%"
+              hidden={hidden}
+              hiddenText="••"
+              resetKey={resetKey}
+            />
           </div>
         </div>
       </div>
@@ -205,9 +321,20 @@ function MarketStrip({ indices }) {
         {compact ? (
           <button className="market-summary" onClick={() => setCompact(false)}>
             <span className="market-name">{primary.name}</span>
-            <span className={tone(primary.changeRate)}>{money.format(primary.value)}</span>
-            <span className={tone(primary.change)}>{signed(primary.change)}</span>
-            <span className={tone(primary.changeRate)}>{signed(primary.changeRate, "%")}</span>
+            <span className={tone(primary.changeRate)}>
+              <AnimatedNumber value={primary.value} resetKey={primary.code} />
+            </span>
+            <span className={tone(primary.change)}>
+              <AnimatedNumber value={primary.change} signedValue resetKey={primary.code} />
+            </span>
+            <span className={tone(primary.changeRate)}>
+              <AnimatedNumber
+                value={primary.changeRate}
+                signedValue
+                suffix="%"
+                resetKey={primary.code}
+              />
+            </span>
             <UpOutlined />
           </button>
         ) : (
@@ -222,10 +349,21 @@ function MarketStrip({ indices }) {
               {indices.map((index) => (
                 <article className={`market-card ${tone(index.changeRate)}`} key={index.code}>
                   <div className="market-name">{index.name}</div>
-                  <strong>{money.format(index.value)}</strong>
+                  <strong>
+                    <AnimatedNumber value={index.value} resetKey={index.code} />
+                  </strong>
                   <div>
-                    <span>{signed(index.change)}</span>
-                    <span>{signed(index.changeRate, "%")}</span>
+                    <span>
+                      <AnimatedNumber value={index.change} signedValue resetKey={index.code} />
+                    </span>
+                    <span>
+                      <AnimatedNumber
+                        value={index.changeRate}
+                        signedValue
+                        suffix="%"
+                        resetKey={index.code}
+                      />
+                    </span>
                   </div>
                 </article>
               ))}
@@ -250,30 +388,48 @@ function HoldingRow({ fund, hidden }) {
         <div className="holding-name">{fund.name}</div>
         <div className="holding-sub">
           {fund.actualTodayProfit != null && <span className="updated-badge">已更新</span>}
-          ¥ {hidden ? "••••" : money.format(fund.amount)}
+          ¥ <AnimatedNumber value={fund.amount} hidden={hidden} resetKey={fund.id} />
           {fund.amountDate && <span>{fund.amountDate}</span>}
           {fund.favorite && <StarFilled className="favorite" />}
         </div>
       </div>
       <div className="holding-valuation">
         <div className={tone(fund.todayRate ?? 0)}>
-          {fund.todayRate == null ? "—" : signed(fund.todayRate, "%")}
+          <AnimatedNumber
+            value={fund.todayRate}
+            signedValue
+            suffix="%"
+            resetKey={fund.id}
+          />
         </div>
         <div className={`holding-valuation-profit ${tone(todayProfit ?? 0)}`}>
           {isEstimated && <span className="estimate-badge">估</span>}
-          {todayProfit == null
-            ? "—"
-            : hidden
-              ? "••••"
-              : signed(todayProfit)}
+          <AnimatedNumber
+            value={todayProfit}
+            signedValue
+            hidden={hidden}
+            resetKey={fund.id}
+          />
         </div>
       </div>
       <div className="holding-profit">
         <div className={tone(fund.holdingProfit)}>
-          {hidden ? "••••" : signed(fund.holdingProfit)}
+          <AnimatedNumber
+            value={fund.holdingProfit}
+            signedValue
+            hidden={hidden}
+            resetKey={fund.id}
+          />
         </div>
         <div className={`holding-rate ${tone(fund.holdingRate)}`}>
-          {hidden ? "••" : signed(fund.holdingRate, "%")}
+          <AnimatedNumber
+            value={fund.holdingRate}
+            signedValue
+            suffix="%"
+            hidden={hidden}
+            hiddenText="••"
+            resetKey={fund.id}
+          />
         </div>
       </div>
     </article>

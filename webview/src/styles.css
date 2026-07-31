@@ -208,6 +208,12 @@ button {
   color: var(--muted);
 }
 
+.animated-number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .table-head {
   min-height: 38px;
   padding: 0 12px;
