@@ -1,6 +1,13 @@
 # 更新历史 
 
 
+## [1.4.0](https://github.com/ylw1997/touchFish-fund/compare/v1.3.0...v1.4.0) (2026-07-31)
+
+
+### ✨ Features | 新功能
+
+* 添加刷新数字过渡动画 ([61ca60d](https://github.com/ylw1997/touchFish-fund/commit/61ca60d0387f1e013726eb42626e7ef7f5dd5462))
+
 ## [1.3.0](https://github.com/ylw1997/touchFish-fund/compare/v1.2.1...v1.3.0) (2026-07-30)
 
 
