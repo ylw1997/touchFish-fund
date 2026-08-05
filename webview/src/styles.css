@@ -4,7 +4,7 @@
   color: var(--vscode-foreground, #17234a);
   background: var(--vscode-sideBar-background, #ffffff);
   --surface: var(--vscode-sideBar-background, #ffffff);
-  --border: var(--vscode-sideBarSectionHeader-border, #edf0f5);
+  --border: color-mix(in srgb, var(--vscode-foreground, #17234a) 10%, var(--surface));
   --muted: var(--vscode-descriptionForeground, #8891a8);
   --primary: var(--vscode-textLink-foreground, #4f6ef7);
   --up: #ff4d5a;
@@ -78,6 +78,10 @@ button {
 .account-tabs > .ant-tabs-nav {
   min-height: 47px;
   margin: 0;
+}
+
+.account-tabs > .ant-tabs-nav::before {
+  border-bottom: 0;
 }
 
 .account-tabs .ant-tabs-nav-list {

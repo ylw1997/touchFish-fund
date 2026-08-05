@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import type { FundApi } from "./fundApi.js";
+import type { Portfolio } from "./types.js";
 
 export class FundViewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = "fundView.portfolio";
@@ -26,16 +27,24 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
     view.onDidDispose(() => this.stopPolling());
   }
 
-  async refresh(): Promise<void> {
+  async refresh(portfolio?: Portfolio): Promise<void> {
     if (!this.view) return;
     try {
-      await this.sendInitialState(true);
+      await this.sendInitialState(portfolio);
     } catch (error) {
-      await this.view.webview.postMessage({
-        type: "error",
-        message: error instanceof Error ? error.message : "刷新失败"
-      });
+      await this.showError(error);
     }
+  }
+
+  async setBusy(busy: boolean): Promise<void> {
+    await this.view?.webview.postMessage({ type: "busy", payload: busy });
+  }
+
+  async showError(error: unknown): Promise<void> {
+    await this.view?.webview.postMessage({
+      type: "error",
+      message: error instanceof Error ? error.message : "刷新失败"
+    });
   }
 
   async showLogin(): Promise<void> {
@@ -49,10 +58,9 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
     try {
       switch (message.type) {
         case "ready":
-          await this.sendInitialState();
+          await this.onPortfolioUpdated();
           break;
         case "refresh":
-          await this.sendInitialState(true);
           await this.onPortfolioUpdated();
           break;
         case "startLogin": {
@@ -66,7 +74,6 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
         case "demoLogin":
           this.stopPolling();
           await this.api.useDemoAccount();
-          await this.sendInitialState();
           await this.onPortfolioUpdated();
           break;
         case "logout":
@@ -79,14 +86,8 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
           if (typeof message.accountId !== "number") {
             throw new Error("账户 ID 无效");
           }
-          await this.view?.webview.postMessage({ type: "busy", payload: true });
-          try {
-            await this.api.selectAccount(message.accountId);
-            await this.sendInitialState();
-            await this.onPortfolioUpdated();
-          } finally {
-            await this.view?.webview.postMessage({ type: "busy", payload: false });
-          }
+          await this.api.selectAccount(message.accountId);
+          await this.onPortfolioUpdated();
           break;
       }
     } catch (error) {
@@ -112,7 +113,6 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
       if (result.status === "confirmed" && result.token) {
         this.stopPolling();
         await this.api.saveToken(result.token);
-        await this.sendInitialState();
         await this.onPortfolioUpdated();
       } else if (result.status === "expired") {
         this.stopPolling();
@@ -132,38 +132,29 @@ export class FundViewProvider implements vscode.WebviewViewProvider {
     this.pollExpiresAt = 0;
   }
 
-  private async sendInitialState(showBusy = false): Promise<void> {
-    if (showBusy) {
-      await this.view?.webview.postMessage({ type: "busy", payload: true });
-    }
-    try {
-      if (!this.api.token) {
-        await this.view?.webview.postMessage({
-          type: "initialState",
-          payload: {
-            loggedIn: false,
-            demo: this.api.isDemo,
-            useDefaultTextColor: this.useDefaultTextColor
-          }
-        });
-        return;
-      }
-
-      const portfolio = await this.api.getPortfolio();
+  private async sendInitialState(portfolio?: Portfolio): Promise<void> {
+    if (!this.api.token) {
       await this.view?.webview.postMessage({
         type: "initialState",
         payload: {
-          loggedIn: true,
+          loggedIn: false,
           demo: this.api.isDemo,
-          useDefaultTextColor: this.useDefaultTextColor,
-          portfolio
+          useDefaultTextColor: this.useDefaultTextColor
         }
       });
-    } finally {
-      if (showBusy) {
-        await this.view?.webview.postMessage({ type: "busy", payload: false });
-      }
+      return;
     }
+
+    const nextPortfolio = portfolio ?? await this.api.getPortfolio();
+    await this.view?.webview.postMessage({
+      type: "initialState",
+      payload: {
+        loggedIn: true,
+        demo: this.api.isDemo,
+        useDefaultTextColor: this.useDefaultTextColor,
+        portfolio: nextPortfolio
+      }
+    });
   }
 
   private get useDefaultTextColor(): boolean {

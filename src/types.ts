@@ -24,6 +24,7 @@ export interface Portfolio {
   updatedAt: string;
   holdings: FundHolding[];
   indices: MarketIndex[];
+  statusIndices: MarketIndex[];
 }
 
 export interface MarketIndex {

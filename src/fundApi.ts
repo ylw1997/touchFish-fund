@@ -104,6 +104,12 @@ const DEMO_PORTFOLIO: Portfolio = {
     { code: "0.399001", name: "深证成指", value: 13658.44, change: 148.76, changeRate: 1.1 },
     { code: "0.399006", name: "创业板指", value: 3378.7, change: 51.67, changeRate: 1.55 },
     { code: "1.000300", name: "沪深300", value: 4423.81, change: 26.31, changeRate: 0.6 }
+  ],
+  statusIndices: [
+    { code: "1.000001", name: "上证指数", value: 3828.47, change: 15.16, changeRate: 0.4 },
+    { code: "0.399001", name: "深证成指", value: 13658.44, change: 148.76, changeRate: 1.1 },
+    { code: "0.399006", name: "创业板指", value: 3378.7, change: 51.67, changeRate: 1.55 },
+    { code: "1.000300", name: "沪深300", value: 4423.81, change: 26.31, changeRate: 0.6 }
   ]
 };
 
@@ -216,7 +222,8 @@ export class FundApi {
         todayProfitRate: 0,
         updatedAt: "暂无数据",
         holdings: [],
-        indices: this.normalizeIndices(collect.index_data)
+        indices: this.normalizeIndices(collect.index_data),
+        statusIndices: this.normalizeAllIndices(collect.index_data)
       };
     }
     const configuredId = this.configuration.get<number>("selectedAccountId", 0);
@@ -251,23 +258,32 @@ export class FundApi {
         minute: "2-digit"
       }).format(new Date()),
       holdings,
-      indices: this.normalizeIndices(collect.index_data)
+      indices: this.normalizeIndices(collect.index_data),
+      statusIndices: this.normalizeAllIndices(collect.index_data)
     };
   }
 
   private normalizeIndices(data?: Record<string, YjbIndexQuote>) {
     const preferredCodes = ["1.000001", "0.399001", "0.399006", "1.000300"];
+    return this.normalizeAllIndices(data).filter((index) => preferredCodes.includes(index.code));
+  }
+
+  private normalizeAllIndices(data?: Record<string, YjbIndexQuote>) {
     if (!data) return [];
-    return preferredCodes.flatMap((code) => {
+    const preferredCodes = ["1.000001", "0.399001", "0.399006", "1.000300"];
+    const orderedCodes = [
+      ...preferredCodes.filter((code) => data[code]),
+      ...Object.keys(data).filter((code) => !preferredCodes.includes(code))
+    ];
+    return orderedCodes.map((code) => {
       const item = data[code];
-      if (!item) return [];
-      return [{
-        code: item.code || item.show_code || code,
-        name: item.name || "指数",
+      return {
+        code,
+        name: item.name || item.show_code || "指数",
         value: this.number(item.v),
         change: this.number(item.div),
         changeRate: this.number(item.dir)
-      }];
+      };
     });
   }
 

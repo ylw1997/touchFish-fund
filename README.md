@@ -19,7 +19,7 @@
 - 刷新数据时，金额、涨跌幅和指数数值平滑过渡
 - 展示上证指数、深证成指、创业板指和沪深 300
 - 一键隐藏资产及收益金额
-- 在 VS Code 状态栏持续展示当前账户的当日收益
+- 在 VS Code 状态栏持续展示当前账户的当日收益和所选指数，点击即可切换指数
 - 支持手动刷新和可配置的定时刷新
 - 自动适配 VS Code 明暗主题
 - 提供本地演示数据，方便界面开发和功能体验
@@ -65,8 +65,9 @@ code --install-extension touchFish-fund-0.1.0.vsix
 
 | 配置项 | 默认值 | 说明 |
 | --- | --- | --- |
-| `fundView.refreshInterval` | `60` | 状态栏收益刷新间隔，单位为秒，最小 60 秒 |
-| `fundView.showStatusBar` | `true` | 是否在状态栏显示当日收益 |
+| `fundView.refreshInterval` | `60` | 收益和指数刷新间隔，单位为秒，最小 60 秒 |
+| `fundView.showStatusBar` | `true` | 是否在状态栏显示当日收益和所选指数 |
+| `fundView.statusBarIndexCode` | `1.000001` | 状态栏指数代码；也可以直接点击状态栏选择 |
 | `fundView.useDefaultTextColor` | `false` | 使用主题默认文字颜色显示收益和涨跌；关闭时使用红涨绿跌 |
 | `fundView.useDemoData` | `false` | 使用内置演示账户，不请求真实账户数据 |
 | `fundView.selectedAccountId` | `0` | 当前账户 ID，由账户切换功能自动维护 |

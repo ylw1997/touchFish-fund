@@ -54,6 +54,10 @@
         "command": "fundView.logout",
         "title": "touchFish-fund：退出登录",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "fundView.selectStatusIndex",
+        "title": "touchFish-fund：选择状态栏指数"
       }
     ],
     "menus": {
@@ -92,7 +96,12 @@
         "fundView.showStatusBar": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "在状态栏显示当日收益。"
+          "markdownDescription": "在状态栏显示当日收益和所选指数。"
+        },
+        "fundView.statusBarIndexCode": {
+          "type": "string",
+          "default": "1.000001",
+          "markdownDescription": "状态栏显示的指数代码，可点击状态栏通过下拉列表选择。"
         },
         "fundView.useDefaultTextColor": {
           "type": "boolean",
