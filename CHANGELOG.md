@@ -1,6 +1,13 @@
 # 更新历史 
 
 
+## [1.5.0](https://github.com/ylw1997/touchFish-fund/compare/v1.4.0...v1.5.0) (2026-08-06)
+
+
+### ✨ Features | 新功能
+
+* 增强状态栏显示，支持选择指数并更新收益信息 ([56813d6](https://github.com/ylw1997/touchFish-fund/commit/56813d60fdf4bb93ba2e789d3c3921f45f8c878e))
+
 ## [1.4.0](https://github.com/ylw1997/touchFish-fund/compare/v1.3.0...v1.4.0) (2026-07-31)
 
 
